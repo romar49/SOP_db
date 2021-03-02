@@ -84,9 +84,17 @@ cur = con.cursor()
 # ** Arhiviranje backup kopij **************************** #
 # ******************************************************** #
 
+# Nastavitev poti za arhiviranje v službi in doma
+### V SLUŽBI
+pot_arhiva = "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/"
+pot_dnev_arhiva = "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_kopije/"
+### DOMA
+# pot_arhiva = "C:/Users/mrogi/PycharmProjects/SOP_db/"
+# pot_dnev_arhiva = "C:/Users/mrogi/PycharmProjects/SOP_db/db_backup/dnevne_kopije"
+
 # Na začetku vedno naredim backup kopijo v mapi "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup"
-list_datotek = [file for file in os.listdir("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup")
-                if os.path.isfile(os.path.join("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup", file))]
+list_datotek = [file for file in os.listdir(pot_arhiva)
+                if os.path.isfile(os.path.join(pot_arhiva, file))]
 
 # V seznam si zapišem številke obstoječih datotek
 st_bck = []
@@ -99,79 +107,75 @@ for i in list_datotek:
 
 # Glede na to koliko kopij je narejenih se odločim ali dodajam nove kopije, ali pa jih prepisujem
 if not st_bck:
-    bck = sqlite3.connect("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_10.db")
+    bck = sqlite3.connect(pot_arhiva + "sop_main_backup_10.db")
     with bck:
         con.backup(bck)
     bck.close()
 
 elif len(st_bck) < 30:
     nov_index = int(st_bck[-1]) + 1
-    bck = sqlite3.connect(
-        "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_" + str(nov_index) + ".db")
+    bck = sqlite3.connect(pot_arhiva + "sop_main_backup_" + str(nov_index) + ".db")
+
     with bck:
         con.backup(bck)
     bck.close()
 
 else:
-    os.remove("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_10.db")
+    os.remove(pot_arhiva + "sop_main_backup_10.db")
 
-    list_datotek = [file for file in os.listdir("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup")
-                    if os.path.isfile(os.path.join("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup", file))]
+    list_datotek = [file for file in os.listdir(pot_arhiva)
+                    if os.path.isfile(os.path.join(pot_arhiva, file))]
 
     for i in list_datotek:
-        os.rename(r"C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + i,
-                  r"C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_" +
+        # os.rename(r"C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + i,
+        #           r"C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_" +
+        #           str(int(i[16:18]) - 1) + ".db")
+        os.rename(pot_arhiva + i,
+                  pot_arhiva + "sop_main_backup_" +
                   str(int(i[16:18]) - 1) + ".db")
+
     nov_index = int(st_bck[-1])
-    bck = sqlite3.connect(
-        "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/sop_main_backup_" + str(nov_index) + ".db")
+    bck = sqlite3.connect(pot_arhiva + "sop_main_backup_" + str(nov_index) + ".db")
     with bck:
         con.backup(bck)
     bck.close()
 
 # Vsak dan prekopiram zadnjo včerajšnjo kopijo v mapo
-list_datotek = [file for file in os.listdir("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup")
-                if os.path.isfile(os.path.join("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup", file))]
+list_datotek = [file for file in os.listdir(pot_arhiva)
+                if os.path.isfile(os.path.join(pot_arhiva, file))]
 
-list_dnevnih_datotek = [file for file in os.listdir("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup"
-                                                    "/dnevne_kopije")
-                        if os.path.isfile(os.path.join("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup"
-                                                       "/dnevne_kopije", file))]
+list_dnevnih_datotek = [file for file in os.listdir(pot_dnev_arhiva)
+                        if os.path.isfile(os.path.join(pot_dnev_arhiva, file))]
 
 if not list_datotek:
     pass
 
 elif not list_dnevnih_datotek:
     zadnja_kopija = list_datotek[-1]
-    datum_zadnje_kopije = os.path.getmtime("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + zadnja_kopija)
+    datum_zadnje_kopije = os.path.getmtime(pot_arhiva + zadnja_kopija)
     ymd_datum_zadnje_kopije = dt.datetime.fromtimestamp(datum_zadnje_kopije).strftime('%Y.%m.%d')
     dnevna_kopija = zadnja_kopija[0:15] + "_" + ymd_datum_zadnje_kopije + ".db"
-    shutil.copyfile("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + zadnja_kopija,
-                    "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_kopije/" + dnevna_kopija)
+    shutil.copyfile(pot_arhiva + zadnja_kopija, pot_dnev_arhiva + dnevna_kopija)
 
 else:
     zadnja_kopija = list_datotek[-1]
-    datum_zadnje_kopije = os.path.getmtime("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + zadnja_kopija)
+    datum_zadnje_kopije = os.path.getmtime(pot_arhiva + zadnja_kopija)
     zadnja_dnevna_kopija = list_dnevnih_datotek[-1]
-    datum_zadnje_dnevne_kopije = os.path.getmtime("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_kopije/"
-                                                  + zadnja_dnevna_kopija)
+    datum_zadnje_dnevne_kopije = os.path.getmtime(pot_dnev_arhiva + zadnja_dnevna_kopija)
 
     if len(list_dnevnih_datotek) < 31:
         if (dt.datetime.fromtimestamp(datum_zadnje_dnevne_kopije).strftime('%m.%d')) < \
                 (dt.datetime.fromtimestamp(datum_zadnje_kopije).strftime('%m.%d')):
             ymd_datum_zadnje_kopije = dt.datetime.fromtimestamp(datum_zadnje_kopije).strftime('%Y.%m.%d')
             dnevna_kopija = zadnja_kopija[0:15] + "_" + ymd_datum_zadnje_kopije + ".db"
-            shutil.copyfile("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/" + zadnja_kopija,
-                            "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_kopije/" + dnevna_kopija)
+            shutil.copyfile(pot_arhiva + zadnja_kopija, pot_dnev_arhiva + dnevna_kopija)
 
     else:
         if (dt.datetime.fromtimestamp(datum_zadnje_dnevne_kopije).strftime('%m.%d')) < \
                 (dt.datetime.fromtimestamp(datum_zadnje_kopije).strftime('%m.%d')):
-            os.remove("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_kopije/" + list_dnevnih_datotek[0])
-            list_dnevnih_datotek = [file for file in os.listdir("C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup"
-                                                                "/dnevne_kopije")
-                                    if os.path.isfile(os.path.join("C:/Users/Marko.Rogic/PycharmProjects/SOP_db"
-                                                                   "/db_backup/dnevne_kopije", file))]
+            os.remove(pot_dnev_arhiva + list_dnevnih_datotek[0])
+            list_dnevnih_datotek = [file for file in os.listdir(pot_dnev_arhiva)
+                                    if os.path.isfile(os.path.join(pot_dnev_arhiva, file))]
 
 
 # ________________________________________________________ #
