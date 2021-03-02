@@ -96,6 +96,8 @@ pot_dnev_arhiva = "C:/Users/Marko.Rogic/PycharmProjects/SOP_db/db_backup/dnevne_
 list_datotek = [file for file in os.listdir(pot_arhiva)
                 if os.path.isfile(os.path.join(pot_arhiva, file))]
 
+# TEST GIT COMMIT
+
 # V seznam si zapišem številke obstoječih datotek
 st_bck = []
 for i in list_datotek:
